@@ -4,6 +4,11 @@
 /*
  * Programed by PaimonZAYCHIK(chy)
  * 
+ * version 2 (2023.12.28)
+ *  - Add BasicContainers -> DVector
+ *     NormSquare
+ *     Norm
+ * 
  * version 1 (2023.11.27)
  *  - Add BasicContainers -> DVector
  *     Mod
@@ -47,7 +52,7 @@ namespace BasicContainers {
             DVector __Copy() const;
             DVector __Minus() const;
             void T();
-            DVector FuncT() const;
+            DVector T() const;
             DVector& operator = (const DVector &Other) {
                 this->Type = Other.Type;
                 this->Elements = Other.Elements;
@@ -58,6 +63,8 @@ namespace BasicContainers {
             friend DVector operator - (const DVector &, const DVector &);
             friend DVector operator * (const double &, const DVector &);
             friend double operator * (const DVector &, const DVector &);
+            double NormSquare() const;
+            double Norm() const;
     };
 }
 

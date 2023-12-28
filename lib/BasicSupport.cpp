@@ -57,7 +57,7 @@ BasicContainers::DVector BasicContainers::DVector::__Minus() const {
         New.Elements[i] = -Elements[i];
     return New;
 }
-BasicContainers::DVector BasicContainers::DVector::FuncT() const {
+BasicContainers::DVector BasicContainers::DVector::T() const {
     DVector New;
     New.Elements = Elements;
     New.Type = !Type;
@@ -96,5 +96,12 @@ double operator * (const BasicContainers::DVector &a, const BasicContainers::DVe
     for (int i = 0; i < N; ++i) Ans = a.Elements[i] * b.Elements[i];
     return Ans;
 }
+double BasicContainers::DVector::NormSquare() const {
+    double Ans = 0;
+    for (std::vector<double>::iteratore it = Elements.begin(); it != Elements.end(); ++it)
+        Ans += (*it) * (*it);
+    return Ans;
+}
+double BasicContainers::DVector::Norm() const { return std::sqrt(NormSquare); }
 
 double BasicFunctions::sqr(double x) { return x * x; }
