@@ -51,6 +51,13 @@ void BMPGraphics::SetPixel(int RowNumber, int ColumeNumber, Color TargetColor) {
     return;
 }
 
+void BMPGraphics::SetBackground(Color TargetColor) {
+    for (int i = 0; i < Row; ++i)
+        for (int j = 0; j < Row; ++j)
+            SetPixel(i, j, TargetColor);
+    return;
+}
+
 Color BMPGraphics::GetPixel(int RowNumber, int ColumeNumber) {
     if (RowNumber >= Row || ColumeNumber >= Colume) return Color(0, 0, 0);
     return Pixel[(Row - RowNumber - 1) * Colume + ColumeNumber];

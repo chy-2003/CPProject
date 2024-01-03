@@ -62,7 +62,7 @@ double GranularParticle::particleGroup::KTemperature() {
 }
 
 void GranularParticle::particleGroup::PositionRand(double Lowerbound, double Upperbound) {
-    std::random_device Rd();
+    std::random_device Rd;
     std::mt19937 Gen(Rd());
     std::uniform_real_distribution<> URD(Lowerbound, Upperbound);
     for (int i = 0; i < Number; ++i) {
@@ -73,7 +73,7 @@ void GranularParticle::particleGroup::PositionRand(double Lowerbound, double Upp
 }
 
 void GranularParticle::particleGroup::VelocityRand2D(double KT) {
-    std::random_device Rd();
+    std::random_device Rd;
     std::mt19937 Gen(Rd());
     std::uniform_real_distribution<> URDA(-BasicConstants::Pi, BasicConstants::Pi);
     std::uniform_real_distribution<> URDR(0.0, std::sqrt(2.0 * KT));
@@ -94,7 +94,7 @@ void GranularParticle::particleGroup::VelocityRand2D(double KT) {
 }
 
 void GranularParticle::particleGroup::VelocityRand3D(double KT) {
-    std::random_device Rd();
+    std::random_device Rd;
     std::mt19937 Gen(Rd());
     std::uniform_real_distribution<> URD(0.0, 1.0);
     std::uniform_real_distribution<> URDR(0.0, std::sqrt(2.0 * KT));

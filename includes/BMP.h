@@ -53,6 +53,7 @@ class BMPGraphics {
         BMPGraphics(int _Row, int _Colume, std::string _Name); 
         ~BMPGraphics(); 
         void SetPixel(int RowNumber, int ColumeNumber, Color TargetColor);
+        void SetBackground(Color);
         Color GetPixel(int RowNumber, int ColumeNumber);
         void DoOutput();
         void Rename(std::string _Name);
