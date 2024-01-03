@@ -1,5 +1,6 @@
 #include "../includes/BasicSupport.h"
 #include <cstdio>
+#include <cmath>
 
 
 double BasicConstants::Pi = 3.14159265358979323846264f;
@@ -96,12 +97,12 @@ double operator * (const BasicContainers::DVector &a, const BasicContainers::DVe
     for (int i = 0; i < N; ++i) Ans = a.Elements[i] * b.Elements[i];
     return Ans;
 }
-double BasicContainers::DVector::NormSquare() const {
+double BasicContainers::DVector::NormSquare() {
     double Ans = 0;
-    for (std::vector<double>::iteratore it = Elements.begin(); it != Elements.end(); ++it)
+    for (std::vector<double>::iterator it = Elements.begin(); it != Elements.end(); ++it)
         Ans += (*it) * (*it);
     return Ans;
 }
-double BasicContainers::DVector::Norm() const { return std::sqrt(NormSquare); }
+double BasicContainers::DVector::Norm() { return std::sqrt(NormSquare()); }
 
 double BasicFunctions::sqr(double x) { return x * x; }

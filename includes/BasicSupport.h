@@ -4,6 +4,9 @@
 /*
  * Programed by PaimonZAYCHIK(chy)
  * 
+ * version 3 (2024.01.03)
+ *  - Bug Fix
+ * 
  * version 2 (2023.12.28)
  *  - Add BasicContainers -> DVector
  *     NormSquare
@@ -63,8 +66,8 @@ namespace BasicContainers {
             friend DVector operator - (const DVector &, const DVector &);
             friend DVector operator * (const double &, const DVector &);
             friend double operator * (const DVector &, const DVector &);
-            double NormSquare() const;
-            double Norm() const;
+            double NormSquare();
+            double Norm();
     };
 }
 
