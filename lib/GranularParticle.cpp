@@ -24,6 +24,21 @@ void GranularParticle::singleParticle::SetDimention(int Dimention) {
     return;
 }
 
+GranularParticle::singleParticle operator * (const double &a, const GranularParticle::singleParticle &b) {
+    GranularParticle::singleParticle Ans = b;
+    Ans.Position = 0.5 * b.Position;
+    Ans.Velocity = 0.5 * b.Velocity;
+    return Ans;
+}
+
+GranularParticle::singleParticle operator + (const GranularParticle::singleParticle &a, 
+        const GranularParticle::singleParticle &b) {
+    GranularParticle::singleParticle Ans = a;
+    Ans.Position = a.Position + b.Position;
+    Ans.Velocity = a.Velocity + b.Velocity;
+    return Ans;
+}
+
 GranularParticle::particleGroup::particleGroup(int _Dimention, int _Number) {
     Number = _Number;
     Dimention = _Dimention;
@@ -115,6 +130,65 @@ void GranularParticle::particleGroup::VelocityRand3D(double KT) {
         Particles[i].Velocity.Elements[0] *= Scale;
         Particles[i].Velocity.Elements[1] *= Scale;
         Particles[i].Velocity.Elements[2] *= Scale;
+    }
+    return;
+}
+
+void GranularParticle::particleGroup::RK4_2(double DeltaT,
+        BasicContainers::DVector (*Force)(const singleParticle &a, const singleParticle &b),
+        singleParticle (*BoundaryModifier)(const singleParticle &a),
+        int ThreadNum) {
+    std::vector<singleParticle> T1, T2, T3, T4; //Position -> U, Velocity -> V
+    T1.resize(Number); T2.resize(Number); T3.resize(Number); T4.resize(Number);
+    int Chunksize = std::max(1, Number / ThreadNum / 2);
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize)
+    for (int i = 0; i < Number; ++i) {
+        T1[i].Position = DeltaT * Particles[i].Velocity;
+        BasicContainers::DVector ForceSum;
+        ForceSum.Resize(Number); ForceSum.SetZero(); 
+        for (int j = 0; j < Number; ++j) 
+            ForceSum = ForceSum + Force(Particles[i], Particles[j]);
+        T1[i].Velocity = DeltaT * (1.0 / Particles[i].Mass) * ForceSum;
+    }
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
+    for (int i = 0; i < Number; ++i) {
+        T2[i].Position = DeltaT * (Particles[i].Velocity + 0.5 * T1[i].Velocity);
+        BasicContainers::DVector ForceSum;
+        ForceSum.Resize(Number); ForceSum.SetZero();
+        for (int j = 0; j < Number; ++j) 
+            ForceSum = ForceSum + Force(Particles[i] + 0.5 * T1[i], Particles[j] + 0.5 * T1[j]);
+        T2[i].Velocity = DeltaT * (1.0 / Particles[i].Mass) * ForceSum;
+    }
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
+    for (int i = 0; i < Number; ++i) {
+        T3[i].Position = DeltaT * (Particles[i].Velocity + 0.5 * T2[i].Velocity);
+        BasicContainers::DVector ForceSum;
+        ForceSum.Resize(Number); ForceSum.SetZero();
+        for (int j = 0; j < Number; ++j) 
+            ForceSum = ForceSum + Force(Particles[i] + 0.5 * T2[i], Particles[j] + 0.5 * T2[j]);
+        T3[i].Velocity = DeltaT * (1.0 / Particles[i].Mass) * ForceSum;
+    }
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
+    for (int i = 0; i < Number; ++i) {
+        T4[i].Position = DeltaT * (Particles[i].Velocity + T3[i].Velocity);
+        BasicContainers::DVector ForceSum;
+        ForceSum.Resize(Number); ForceSum.SetZero();
+        for (int j = 0; j < Number; ++j) 
+            ForceSum = ForceSum + Force(Particles[i] + T3[i], Particles[j] + T3[j]);
+        T4[i].Velocity = DeltaT * (1.0 / Particles[i].Mass) * ForceSum;
+    }
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
+    for (int i = 0; i < Number; ++i) {
+        Particles[i].Position = Particles[i].Position + 
+                (1.0 / 6.0) * (T1[i].Position + 2.0 * T2[i].Position + 2.0 * T3[i].Position + T4[i].Position);
+        Particles[i].Velocity = Particles[i].Velocity + 
+                (1.0 / 6.0) * (T1[i].Velocity + 2.0 * T2[i].Velocity + 2.0 * T3[i].Velocity + T4[i].Velocity);
+        Particles[i] = BoundaryModifier(Particles[i]);
     }
     return;
 }

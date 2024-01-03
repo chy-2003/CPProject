@@ -6,7 +6,7 @@
  * 
  * version 3 (2024.01.03)
  *  - Gramma Fix
- *  - BasicContainers -> Resize
+ *  - BasicContainers -> Resize, SetZero
  * 
  * version 2 (2023.12.28)
  *  - Add BasicContainers -> DVector
@@ -54,6 +54,7 @@ namespace BasicContainers {
             int Size() const;
             double Mod() const;
             void Resize(int _size);
+            void SetZero();
             DVector __Copy() const;
             DVector __Minus() const;
             void T();

@@ -39,6 +39,11 @@ void BasicContainers::DVector::Resize(int _size) {
     Elements.shrink_to_fit();
     return;
 }
+void BasicContainers::DVector::SetZero() {
+    for (std::vector<double>::iterator it = Elements.begin(); it != Elements.end(); ++it)
+        (*it) = 0;
+    return;
+}
 double BasicContainers::DVector::Mod() const {
     double Ans = 0; 
     int Size = Elements.size();

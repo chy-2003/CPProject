@@ -5,11 +5,16 @@
 #include <vector>
 #include <random>
 #include <cmath>
+#include <omp.h>
 
 /*
  *
  *
  * Programed by PaimonZAYCHIK(chy)
+ * 
+ * version 1 (2024.01.03)
+ *  - particleGroup
+ *    - RK4_2
  * 
  * version 0 (2024.01.03)
  *  - singleParticle
@@ -33,6 +38,8 @@ namespace GranularParticle {
         singleParticle(int);
         singleParticle();
         void SetDimention(int);
+        friend singleParticle operator * (const double &, const singleParticle &);
+        friend singleParticle operator + (const singleParticle &, const singleParticle &);
     };
 
     class particleGroup {
@@ -47,6 +54,11 @@ namespace GranularParticle {
         void PositionRand(double, double);
         void VelocityRand2D(double);              //for 2D system, uniform distribution(circle)
         void VelocityRand3D(double);              //for 3D system, uniform distribution(ball)
+
+        void RK4_2(double DeltaT, 
+                BasicContainers::DVector (*Force)(const singleParticle &a, const singleParticle &b), 
+                singleParticle (*BoundaryModifier)(const singleParticle &a),
+                int ThreadNum);
     };
 }
 
