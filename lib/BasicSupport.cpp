@@ -34,6 +34,11 @@ BasicContainers::DVector::DVector(const int &_Size, const bool &_Type, const dou
 int BasicContainers::DVector::Size() const {
     return Elements.size();
 }
+void BasicContainers::DVector::Resize(int _size) {
+    Elements.resize(_size);
+    Elements.shrink_to_fit();
+    return;
+}
 double BasicContainers::DVector::Mod() const {
     double Ans = 0; 
     int Size = Elements.size();

@@ -7,11 +7,12 @@
  * Programed by PaimonZAYCHI(chy)
  * 
  * version 1 (2024.01.03)
+ *  - DrawParticle(2)
  * 
  * version 0 (2023.12.11)
  */
 
-void DrawPartical(BMPGraphics &, int, int, Color);
-void DrawPartical(BMPGraphics &, int, int);
+void DrawParticle(BMPGraphics &, int, int, Color);
+void DrawParticle(BMPGraphics &, int, int);
 
 #endif

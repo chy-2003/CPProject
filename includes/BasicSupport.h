@@ -5,7 +5,8 @@
  * Programed by PaimonZAYCHIK(chy)
  * 
  * version 3 (2024.01.03)
- *  - Bug Fix
+ *  - Gramma Fix
+ *  - BasicContainers -> Resize
  * 
  * version 2 (2023.12.28)
  *  - Add BasicContainers -> DVector
@@ -52,6 +53,7 @@ namespace BasicContainers {
             DVector(const int &, const bool &, const double &);
             int Size() const;
             double Mod() const;
+            void Resize(int _size);
             DVector __Copy() const;
             DVector __Minus() const;
             void T();
