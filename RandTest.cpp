@@ -4,6 +4,7 @@
 
 Color White((unsigned char)255, (unsigned char)255, (unsigned char)255);
 Color Red((unsigned char)0, (unsigned char)0, (unsigned char)255);
+Color Black((unsigned char)0, (unsigned char)0, (unsigned char)0);
 
 int main() {
     BMPGraphics PositionPIC(1024, 1024, "PositionDistribution.bmp");
@@ -17,6 +18,7 @@ int main() {
                 (int)ParticleGroup2D.Particles[i].Position.Elements[1],
                 Red);
     }
+    WriteSentence(PositionPIC, 10, 10, (unsigned char *)"PositionUniformDistributionTest", 31, Black, 1);
     PositionPIC.DoOutput();
 
     BMPGraphics AnglePIC2D(1024, 1024, "AnglePic2D.bmp");
@@ -35,6 +37,8 @@ int main() {
                 (int)(ParticleGroup2D.Particles[i].Velocity.Elements[1] / V * 500 + 512),
                 Red);
     }
+    WriteSentence(AnglePIC2D, 10, 10, (unsigned char *)"Angle2DUniformDistributionTest", 30, Black, 1);
+    WriteSentence(VelocityPIC2D, 10, 10, (unsigned char *)"Velocity2DUniformDistributionTest", 33, Black, 1);
     AnglePIC2D.DoOutput();
     VelocityPIC2D.DoOutput();
     return 0;
