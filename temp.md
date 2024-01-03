@@ -15,6 +15,10 @@ $$
 kT=\frac{1}{2N}\sum m_i\overline{\mathbf{v}_i\cdot \mathbf{v}_i}
 $$
 
+$$
+k = 1.380649\times 10^{-23} J/K
+$$
+
 #### Proj
 
 A viscous damping force
@@ -23,8 +27,8 @@ f_{ij}=-\gamma(\mathbf{v}_{ij}\cdot\mathbf{r}_{ij})\frac{\mathbf{r}_{ij}}{r_{ij}
 $$
 
 $$
-k = 1.380649\times 10^{-23} J/K\\
-\gamma = 100
+\gamma = 100\\
+m_i = 1
 $$
 
 kinetic temperature
