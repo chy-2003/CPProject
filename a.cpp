@@ -2,7 +2,7 @@
 #include <cstring>
 #include <cmath>
 
-//g++ lib/*.cpp a.cpp -o a.exe -O2
+//g++ lib/*.cpp a.cpp -o a.exe -O2 -fopenmp
 
 const int N = 8;
 const double L = 20.0;
