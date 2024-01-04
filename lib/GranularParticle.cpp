@@ -26,7 +26,7 @@ void singleParticle::SetDimention(int Dimention) {
 }
 
 void singleParticle::OutputState() {
-    printf("Particle %d, Mass = %.2lf:\n", (int)(this), Mass);
+    printf("Particle %lld, Mass = %.2lf:\n", (long long)(this), Mass);
     printf("\tPosition : ");
     for (std::vector<double>::iterator it = Position.Elements.begin(); 
             it != Position.Elements.end(); ++it)
