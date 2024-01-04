@@ -35,47 +35,45 @@
 
 #include <cmath>
 #include <vector>
+#include <cstdio>
 
-namespace BasicConstants {
-    extern double Pi;
-}
+const double GlobalEPS = 1e-8;
 
-namespace BasicContainers {
-    class DVector {
-        public :
-            std::vector<double> Elements;
-            bool Type;   //False for n*1, True for 1*n
-            DVector();
-            ~DVector();
-            DVector(const int &);
-            DVector(const int &, const bool &);
-            DVector(const int &, const double &);
-            DVector(const int &, const bool &, const double &);
-            int Size() const;
-            double Mod() const;
-            void Resize(int _size);
-            void SetZero();
-            DVector __Copy() const;
-            DVector __Minus() const;
-            void T();
-            DVector T() const;
-            DVector& operator = (const DVector &Other) {
-                this->Type = Other.Type;
-                this->Elements = Other.Elements;
-                return *this;
-            }
-            friend DVector operator + (const DVector &, const DVector &);
-            DVector operator -() const { return __Minus(); }
-            friend DVector operator - (const DVector &, const DVector &);
-            friend DVector operator * (const double &, const DVector &);
-            friend double operator * (const DVector &, const DVector &);
-            double NormSquare();
-            double Norm();
-    };
-}
+extern double Pi;
 
-namespace BasicFunctions {
-    double sqr(double x);
-}
+double sqr(double x);
+
+class DVector {
+    public :
+        std::vector<double> Elements;
+        bool Type;   //False for n*1, True for 1*n
+        DVector();
+        ~DVector();
+        DVector(const int &);
+        DVector(const int &, const bool &);
+        DVector(const int &, const double &);
+        DVector(const int &, const bool &, const double &);
+        int Size() const;
+        double Mod() const;
+        void Resize(int _size);
+        void SetZero();
+        DVector __Copy() const;
+        DVector __Minus() const;
+        void T();
+        DVector T() const;
+        DVector& operator = (const DVector &Other) {
+            this->Type = Other.Type;
+            this->Elements = Other.Elements;
+            return *this;
+        }
+        friend DVector operator + (const DVector &a, const DVector &b); 
+        DVector operator -() const { return __Minus(); }
+        friend DVector operator - (const DVector &a, const DVector &b);
+        friend DVector operator * (const double &a, const DVector &b);
+        friend double operator * (const DVector &a, const DVector &b);
+        double NormSquare();
+        double Norm();
+        DVector e();
+};
 
 #endif

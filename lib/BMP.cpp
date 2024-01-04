@@ -47,6 +47,7 @@ BMPGraphics::~BMPGraphics() {
 
 void BMPGraphics::SetPixel(int RowNumber, int ColumeNumber, Color TargetColor) {
     if (RowNumber >= Row || ColumeNumber >= Colume) return;
+    if (RowNumber < 0 || ColumeNumber < 0) return;
     Pixel[(Row - RowNumber - 1) * Colume + ColumeNumber] = TargetColor;
     return;
 }
@@ -65,6 +66,10 @@ Color BMPGraphics::GetPixel(int RowNumber, int ColumeNumber) {
 
 void BMPGraphics::DoOutput() {
     FILE *OutputTarget = fopen(Name.data(), "wb");
+    if (OutputTarget == NULL) {
+        printf("Cannot Open Target File [%s]\n", Name.data());
+        return;
+    }
     int RowSize = (24 * Colume + 31) / 32 * 4;
     int RawSize = RowSize * Row;
     int FileSize = 54 + RawSize;

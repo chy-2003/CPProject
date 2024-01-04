@@ -9,7 +9,7 @@ Color Black((unsigned char)0, (unsigned char)0, (unsigned char)0);
 int main() {
     BMPGraphics PositionPIC(1024, 1024, "TestOutput/PositionDistribution.bmp");
     PositionPIC.SetBackground(White);
-    GranularParticle::particleGroup ParticleGroup2D(2, 8192);
+    particleGroup ParticleGroup2D(2, 8192);
     ParticleGroup2D.Init();
     ParticleGroup2D.PositionRand(0.0, 1024.0);
     for (int i = 0; i < ParticleGroup2D.Number; ++i) {
@@ -48,7 +48,7 @@ int main() {
     Angle3DXY.SetBackground(White);
     Angle3DYZ.SetBackground(White);
     Angle3DZX.SetBackground(White);
-    GranularParticle::particleGroup ParticleGroup3D(3, 8192);
+    particleGroup ParticleGroup3D(3, 8192);
     ParticleGroup3D.Init();
     ParticleGroup3D.PositionRand(0.0, 1024.0);
     ParticleGroup3D.VelocityRand3D(10);

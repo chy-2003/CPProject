@@ -14,5 +14,6 @@
 
 void DrawParticle(BMPGraphics &, int, int, Color);
 void DrawParticle(BMPGraphics &, int, int);
+void DrawParticleR(BMPGraphics &, int, int, int, Color);
 
 #endif

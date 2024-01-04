@@ -1,7 +1,8 @@
 #### Lennard-Jones potential
 
 $$
-u(r) = 4\epsilon\left(\left(\frac{\sigma}{r}\right)^{12}-\left(\frac{\sigma}{r}\right)^{6}\right)
+u(r) = 4\epsilon\left(\left(\frac{\sigma}{r}\right)^{12}-\left(\frac{\sigma}{r}\right)^{6}\right)\\
+\mathbf{F}(\mathbf{r}) = 4\epsilon\left(12\frac{\sigma^{12}}{r^{13}} - 6\frac{\sigma^6}{r^7}\right)\hat{\mathbf{r}}
 $$
 
 #### Kinetic temperature
@@ -10,7 +11,7 @@ $$
 kT(t)=\frac{2}{d}\frac{K(t)}{N}=\frac{1}{Nd}\sum_{i=1}^Nm_i\mathbf{v}_i(t)\cdot\mathbf{v}_i(t)
 $$
 
-for two dimentional
+for 2D
 $$
 kT=\frac{1}{2N}\sum m_i\overline{\mathbf{v}_i\cdot \mathbf{v}_i}
 $$
@@ -37,6 +38,6 @@ T = \frac{1}{N}\sum m_i \overline{\mathbf{v}_i\cdot \mathbf{v}_i}
 $$
 
 $$
-N = 64, L = 20, \Delta t = 0.001
+N = 64, L = 20, \Delta t = 0.001, T_0 = 10
 $$
 
