@@ -51,13 +51,13 @@ public :
     double KTemperature();
     double Energy(double (*Potential)(const singleParticle &, const singleParticle &));
     void PositionRand(double, double);
+    void PositionRand(double, double, double);
     void VelocityRand2D(double);              //for 2D system, uniform distribution(circle)
     void VelocityRand3D(double);              //for 3D system, uniform distribution(ball)
 
     void RK4_2(double DeltaT, 
             DVector (*Force)(const singleParticle &a, const singleParticle &b), 
-            singleParticle (*BoundaryModifier)(const singleParticle &a),
-            int ThreadNum);
+            singleParticle (*BoundaryModifier)(const singleParticle &a));
 };
 
 #endif

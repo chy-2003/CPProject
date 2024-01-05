@@ -97,6 +97,26 @@ void particleGroup::PositionRand(double Lowerbound, double Upperbound) {
     return;
 }
 
+void particleGroup::PositionRand(double Lowerbound, double Upperbound, double startAvoid) {
+    std::random_device Rd;
+    std::mt19937 Gen(Rd());
+    std::uniform_real_distribution<> URD(Lowerbound, Upperbound);
+    for (int i = 0; i < Number; ++i) {
+        int Flg = 0;
+        while (!Flg) {
+            for (int j = 0; j < Dimention; ++j)
+                Particles[i].Position.Elements[j] = URD(Gen);
+            Flg = 1;
+            for (int j = 0; j < i; ++j)
+                if ((Particles[i].Position - Particles[j].Position).Norm() < startAvoid) {
+                    Flg = 0;
+                    break;
+                }
+        }
+    }
+    return;
+}
+
 void particleGroup::VelocityRand2D(double KT) {
     std::random_device Rd;
     std::mt19937 Gen(Rd());
@@ -146,29 +166,25 @@ void particleGroup::VelocityRand3D(double KT) {
 
 void particleGroup::RK4_2(double DeltaT,
         DVector (*Force)(const singleParticle &a, const singleParticle &b),
-        singleParticle (*BoundaryModifier)(const singleParticle &a),
-        int ThreadNum) {
+        singleParticle (*BoundaryModifier)(const singleParticle &a)) {
+    
     std::vector<singleParticle> T1, T2, T3, T4, Temp; //Position -> U, Velocity -> V
     T1.resize(Number); T2.resize(Number); T3.resize(Number); T4.resize(Number);
     Temp.resize(Number);
-    int Chunksize = std::max(1, Number / ThreadNum / 2);
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize)
     for (int i = 0; i < Number; ++i) {
         T1[i].Position = DeltaT * Particles[i].Velocity;
         DVector ForceSum;
-        ForceSum.Resize(Number); ForceSum.SetZero(); 
-        for (int j = 0; j < Number; ++j) 
+        ForceSum.Resize(Number); ForceSum.SetZero();
+        for (int j = 0; j < Number; ++j)
             ForceSum = ForceSum + Force(Particles[i], Particles[j]);
         T1[i].Velocity = DeltaT * (1.0 / Particles[i].Mass) * ForceSum;
     }
-
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
+    
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + 0.5 * T1[i].Position;
         Temp[i].Velocity = Particles[i].Velocity + 0.5 * T1[i].Velocity;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
     for (int i = 0; i < Number; ++i) {
         T2[i].Position = DeltaT * (Particles[i].Velocity + 0.5 * T1[i].Velocity);
         DVector ForceSum;
@@ -178,12 +194,10 @@ void particleGroup::RK4_2(double DeltaT,
         T2[i].Velocity = DeltaT * (1.0 / Particles[i].Mass) * ForceSum;
     }
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + 0.5 * T2[i].Position;
         Temp[i].Velocity = Particles[i].Velocity + 0.5 * T2[i].Velocity;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
     for (int i = 0; i < Number; ++i) {
         T3[i].Position = DeltaT * (Particles[i].Velocity + 0.5 * T2[i].Velocity);
         DVector ForceSum;
@@ -193,12 +207,10 @@ void particleGroup::RK4_2(double DeltaT,
         T3[i].Velocity = DeltaT * (1.0 / Particles[i].Mass) * ForceSum;
     }
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + 0.5 * T3[i].Position;
         Temp[i].Velocity = Particles[i].Velocity + 0.5 * T3[i].Velocity;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
     for (int i = 0; i < Number; ++i) {
         T4[i].Position = DeltaT * (Particles[i].Velocity + T3[i].Velocity);
         DVector ForceSum;
@@ -208,7 +220,6 @@ void particleGroup::RK4_2(double DeltaT,
         T4[i].Velocity = DeltaT * (1.0 / Particles[i].Mass) * ForceSum;
     }
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, Chunksize) 
     for (int i = 0; i < Number; ++i) {
         Particles[i].Position = Particles[i].Position + 
                 (1.0 / 6.0) * (T1[i].Position + 2.0 * T2[i].Position + 2.0 * T3[i].Position + T4[i].Position);

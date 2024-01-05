@@ -4,18 +4,21 @@
 
 //g++ lib/*.cpp a.cpp -o a.exe -O2 -fopenmp -std=c++11
 
-const int N = 8;
+const int N = 64;
 const double L = 20.0;
 const double DeltaT = 0.001;
-const double StartKT = 0.1;
-const int ThreadNum = 12;
+const double StartKT = 10.0;
+const int ThreadNum = 16;
 const int Dimension = 2;
 const double gamma = 100.0;
-const double epsilon = 0.1;
-const double sigma = 3.0;
+const double epsilon = 1.0;
+const double sigma = 1.0;
 const double sigma12 = std::pow(sigma, 12.0);
 const double sigma6 = std::pow(sigma, 6.0);
+const double startAvoid = std::pow(2.0, 1.0 / 6.0) * sigma;
 particleGroup AllFree(Dimension, N);
+
+//#define __DO_PIC_OUTPUT__
 
 Color White((unsigned char)255, (unsigned char)255, (unsigned char)255);
 Color Red((unsigned char)0, (unsigned char)0, (unsigned char)255);
@@ -24,7 +27,7 @@ Color Black((unsigned char)0, (unsigned char)0, (unsigned char)0);
 
 void Init() {
     AllFree.Init();
-    AllFree.PositionRand(0, L);
+    AllFree.PositionRand(0, L, startAvoid);
     AllFree.VelocityRand2D(StartKT);
     return;
 }
@@ -37,7 +40,7 @@ DVector Force(const singleParticle &a, const singleParticle &b) {
     double R = r.Norm();
     if (fabs(R) < GlobalEPS) return Ans;
     DVector LennardJonesForce = 
-            (4.0 * epsilon * (12.0 * sigma12 / std::pow(R, 13.0) - 6.0 * sigma6 / std::pow(R, 7.0))) * r.e();
+            (24.0 * epsilon * (2.0 * sigma12 / std::pow(R, 13.0) - sigma6 / std::pow(R, 7.0))) * r.e();
 
     //DVector DragForce = ((-gamma) * 
     //        ((b.Velocity - a.Velocity) * (b.Position - a.Position)) / 
@@ -80,21 +83,31 @@ singleParticle BoundaryModifier(const singleParticle &a) {
     return Ans;
 }
 
+void WarnRE() {
+    for (int i = 0; i < N; ++i)
+        for (int j = 0; j < i; ++j) {
+            double R = (AllFree.Particles[i].Position - AllFree.Particles[j].Position).Norm();
+            if (R < startAvoid / 10)
+                printf("[WARNING]: particle distance < 2^(1/6) / 10\n");
+        }
+    return;
+}
+
 char GraphicName[100];
 
 int main() {
     Init();
-    int MaxV = 0; double RecMaxV = 0.0;
-    for (int i = 1; i < N; ++i)
-        if (AllFree.Particles[i].Velocity.Norm() > RecMaxV) {
-            RecMaxV = AllFree.Particles[i].Velocity.Norm();
-            MaxV = i;
-        }
-    //AllFree.Particles[MaxV].OutputState();
     FILE *OutputTarget = fopen("CaseZero.csv", "w");
-    int TotalStep = 1000;
+    int TotalStep = 50; int OutputNum = (TotalStep / 50);
     for (int i = 0; i < TotalStep; ++i) {
-        if (i % 50 == 0) {
+        WarnRE();
+        if (i % OutputNum == 0) {
+            double RecMaxV = 0.0;
+            for (int j = 1; j < N; ++j)
+                if (AllFree.Particles[j].Velocity.Norm() > RecMaxV)
+                    RecMaxV = AllFree.Particles[j].Velocity.Norm();
+//            printf("MaxV = %.2lf\n", RecMaxV);
+            #ifdef __DO_PIC_OUTPUT__
             memset(GraphicName, 0, sizeof(GraphicName));
             sprintf(GraphicName, "GO/%04d.bmp", i);
             BMPGraphics GraphicOutput(512, 512, GraphicName);
@@ -105,19 +118,15 @@ int main() {
                         (int)(AllFree.Particles[j].Position.Elements[1] / 20.0 * 512),
                         5, Red);
             }
-            DrawParticleR(GraphicOutput, 
-                    (int)(AllFree.Particles[MaxV].Position.Elements[0] / 20.0 * 512),
-                    (int)(AllFree.Particles[MaxV].Position.Elements[1] / 20.0 * 512),
-                    5, Blue);
             GraphicOutput.DoOutput();
+            #endif
             printf("%6.2lf%\n", 100.0 * i / TotalStep);
         }
         fprintf(OutputTarget, "%.10lf, %.10lf, %.10lf\n", 
                 i * DeltaT, AllFree.KTemperature(), AllFree.Energy(Potential));
-        AllFree.RK4_2(DeltaT, Force, BoundaryModifier, ThreadNum);
-        //printf("%d\n", i);
-        //AllFree.Particles[MaxV].OutputState();
+        AllFree.RK4_2(DeltaT, Force, BoundaryModifier);
     }
+    printf("Done.\n");
     fclose(OutputTarget);
     return 0;
 }

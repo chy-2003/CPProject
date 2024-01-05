@@ -2,7 +2,7 @@
 
 $$
 u(r) = 4\epsilon\left(\left(\frac{\sigma}{r}\right)^{12}-\left(\frac{\sigma}{r}\right)^{6}\right)\\
-\mathbf{F}(\mathbf{r}) = 4\epsilon\left(12\frac{\sigma^{12}}{r^{13}} - 6\frac{\sigma^6}{r^7}\right)\hat{\mathbf{r}}
+\mathbf{F}(\mathbf{r}) = 24\epsilon\left(2\frac{\sigma^{12}}{r^{13}} - \frac{\sigma^6}{r^7}\right)\hat{\mathbf{r}}
 $$
 
 #### Kinetic temperature
@@ -40,4 +40,15 @@ $$
 $$
 N = 64, L = 20, \Delta t = 0.001, T_0 = 10
 $$
+
+| Quantity    | Unit                       | Value of Argon           |
+| ----------- | -------------------------- | ------------------------ |
+| length      | $\sigma$                   | $3.4\times10^{-10}$ m    |
+| energy      | $\epsilon$                 | $1.65\times 10^{-21}$ J  |
+| mass        | $m$                        | $6.69\times 10^{-26}$ kg |
+| time        | $\sigma(m/\epsilon)^{1/2}$ | $2.17\times 10^{-12}$ s  |
+| velocity    | $(\epsilon/m)^{1/2}$       | $1.57\times 10^2$ m/s    |
+| force       | $\epsilon/\sigma$          | $4.85\times 10^{-12}$ N  |
+| pressure    | $\epsilon / \sigma^2$      | $1.43\times 10^{-2}$ N/m |
+| temperature | $\epsilon / k$             | $120$ K                  |
 

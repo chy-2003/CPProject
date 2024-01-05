@@ -1,5 +1,42 @@
 [TOC]
 
+### 使用的公式和单位说明
+
+#### Lennard-Jones
+
+$$
+u(r) = 4\epsilon\left(\left(\frac{\sigma}{r}\right)^{12}-\left(\frac{\sigma}{r}\right)^{6}\right)\\
+\mathbf{F}(\mathbf{r}) = 24\epsilon\left(2\frac{\sigma^{12}}{r^{13}} - \frac{\sigma^6}{r^7}\right)\hat{\mathbf{r}}
+$$
+
+#### Drag Force
+
+$$
+f_{ij}=-\gamma(\mathbf{v}_{ij}\cdot\mathbf{r}_{ij})\frac{\mathbf{r}_{ij}}{r_{ij}^2}\\
+\gamma = 100
+$$
+
+#### unit
+
+| Quantity    | Unit                       | Value of Argon           |
+| ----------- | -------------------------- | ------------------------ |
+| length      | $\sigma$                   | $3.4\times10^{-10}$ m    |
+| energy      | $\epsilon$                 | $1.65\times 10^{-21}$ J  |
+| mass        | $m$                        | $6.69\times 10^{-26}$ kg |
+| time        | $\sigma(m/\epsilon)^{1/2}$ | $2.17\times 10^{-12}$ s  |
+| velocity    | $(\epsilon/m)^{1/2}$       | $1.57\times 10^2$ m/s    |
+| force       | $\epsilon/\sigma$          | $4.85\times 10^{-12}$ N  |
+| pressure    | $\epsilon / \sigma^2$      | $1.43\times 10^{-2}$ N/m |
+| temperature | $\epsilon / k$             | $120$ K                  |
+
+$k = 1.380649\times 10^{-23} J/K$
+
+#### 默认初始
+
+$$
+N = 64, L = 20, \Delta t = 0.001, T_0 = 10
+$$
+
 ### 程序包说明
 
 #### 头文件依赖顺序
@@ -86,9 +123,10 @@ $\pi$  。 ``double Pi = 3.14159265358979323846264f`` 。
 |                  ``double KTemperature();``                  |            **成员函数**，返回温度，定义为平均动能            |
 | ``double Energy(double (*Potential)(const singleParticle &, const singleParticle &));`` | **成员函数**，返回体系总机械能，需要传入函数指针``Potential``，定义粒子间两两势能 |
 |          ``void PositionRand(double L, double R);``          |   **成员函数**，将所有粒子在空间坐标 $[L,R)$ 之间均匀分布    |
+|     ``void PositionRand(double L, double R, double A);``     | **成员函数**，将所有粒子在空间坐标 $[L,R)$ 之间均匀分布，且间距在 $A$ 以上。 |
 |             ``void VelocityRand2D(double KT); ``             | **成员函数**，将所有粒子的速度随机分布。满足：速度方向在单位圆上均匀分布，径向速度均匀分布，温度等于``KT``。仅二维体系可用。 |
 |             ``void VelocityRand3D(double KT);``              | **成员函数**，将所有粒子的速度随机分布。满足：速度方向在单位球上均匀分布，径向速度均匀分布，温度等于``KT``。仅三维体系可用。 |
-| ``void RK4_2(double DeltaT, DVector (*Force)(const singleParticle &a, const singleParticle &b), singleParticle (*BoundaryModifier)(const singleParticle &a), int ThreadNum);`` | **成员函数**，单步运动模拟，步长为 ``DeltaT`` 。使用适用二阶微分方程的四阶 Ronge-Kutta 方法。需传入函数指针 ``Force`` 定义两个粒子间的力。需传入函数指针 ``BoundaryModifier`` ，定义体系边界和修正方法。``ThreadNum`` 约束 ``RK4_2`` 最多可使用线程数。 |
+| ``void RK4_2(double DeltaT, DVector (*Force)(const singleParticle &a, const singleParticle &b), singleParticle (*BoundaryModifier)(const singleParticle &a));`` | **成员函数**，单步运动模拟，步长为 ``DeltaT`` 。使用适用二阶微分方程的四阶 Ronge-Kutta 方法。需传入函数指针 ``Force`` 定义两个粒子间的力。需传入函数指针 ``BoundaryModifier`` ，定义体系边界和修正方法。 |
 
 ##### ``BMP.h`` 暂略
 
@@ -123,5 +161,15 @@ $$
 
 #### 1
 
-Lennard-Jones势在两个粒子较接近时斜率太大而导致一些问题。比如两个粒子时，两个粒子以较低速度接近。相对较远时受力不明显，两粒子接近。当接近到某一程度时，受力猛增，导致下一帧两个粒子都获得了极大的速度。而实际上这应该被视为弹性碰撞。在这个模拟过程中，能量无中生有。
+多线程并行运行时，会产生未知运行错误。并不清楚产生的原因，猜测是同时访问 ``std::vector<>::iterator`` 的地址导致。暂时砍掉多线程模块。
+
+#### 2
+
+Lennard-Jones势在两个粒子较接近时斜率太大而导致一些问题。比如两个粒子时，两个粒子以较低速度接近。相对较远时受力不明显，两粒子接近。当接近到某一程度时，受力猛增，导致下一帧两个粒子都获得了极大的速度，甚至是相互穿透导致运动模拟完全错误。而实际上这应该被视为弹性碰撞。
+
+#### 3
+
+在测试算法时发现，即使没有发生碰撞，总能量也会有持续的缓慢变化，按照题给的初始条件，量级在 $0.1$ 个单位能量每 $100$ 步。同时增长的概率大于减小。若把时间步长变为原来的 $1/10$ ，那么相同模拟时长下总能量的变化量级变为 $0.01$ 。
+
+这个归为误差，无法解决。
 
