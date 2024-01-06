@@ -8,9 +8,9 @@ const int N = 64;
 const double L = 20.0;
 const double DeltaT = 0.001;
 const double StartKT = 10.0;
-const int ThreadNum = 16;
+const int ThreadNum = 12;
 const int Dimension = 2;
-const double gamma = 100.0;
+const double gamma = 0.1;
 const double epsilon = 1.0;
 const double sigma = 1.0;
 const double sigma12 = std::pow(sigma, 12.0);
@@ -42,13 +42,12 @@ DVector Force(const singleParticle &a, const singleParticle &b) {
     DVector LennardJonesForce = 
             r.e() * (24.0 * epsilon * (2.0 * sigma12 / std::pow(R, 13.0) - sigma6 / std::pow(R, 7.0)));
 
-    //DVector DragForce = ((-gamma) * 
-    //        ((b.Velocity - a.Velocity) * (b.Position - a.Position)) / 
-    //        (b.Position - a.Position).NormSquare()) *
-    //        (b.Position - a.Position);
-    
-    //Ans = LennardJonesForce + DragForce;
-    Ans = LennardJonesForce;
+    DVector DragForce = (a.Position - b.Position) * 
+            ((-gamma) * ((b.Velocity - a.Velocity) * (b.Position - a.Position)) / 
+            (b.Position - a.Position).NormSquare());
+    //printf("%.2lf\n", DragForce.Norm() / LennardJonesForce.Norm());
+    Ans = LennardJonesForce + DragForce;
+    //Ans = LennardJonesForce;
     return Ans;
 }
 
@@ -97,8 +96,8 @@ char GraphicName[100];
 
 int main() {
     Init();
-    FILE *OutputTarget = fopen("CaseZero.csv", "w");
-    int TotalStep = 5000; int OutputNum = (TotalStep / 50);
+    FILE *OutputTarget = fopen("CaseOne.csv", "w");
+    int TotalStep = 5000; int OutputNum = std::max(1, TotalStep / 50);
     for (int i = 0; i < TotalStep; ++i) {
         //WarnRE();
         if (i % OutputNum == 0) {
