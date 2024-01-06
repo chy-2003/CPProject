@@ -71,20 +71,19 @@ $\pi$  。 ``double Pi = 3.14159265358979323846264f`` 。
 
 ##### ``DVector(BasicSupport.h)``  向量
 
-|                             定义                             |                           说明                           |
-| :----------------------------------------------------------: | :------------------------------------------------------: |
-|                   ``double Elements[3];``                    |                **成员变量**，维护向量内容                |
-|                     ``void SetZero();``                      | **成员函数**，将向量设为$\overrightarrow 0$ ，不改变维数 |
-|                   ``double NormSquare();``                   |         **成员函数**，返回 $|\mathbf \alpha|^2$          |
-|                      ``double Norm();``                      |          **成员函数**，返回 $|\mathbf \alpha|$           |
-|                       ``DVector e();``                       |             **成员函数**，返回该方向单位向量             |
-|       ``DVector& operator = (const DVector &Other);``        |                    **运算符**，深拷贝                    |
-|     ``DVector operator + (const DVector &other) const;``     |                     **运算符**，加法                     |
-|               ``DVector operator -() const;``                |                     **运算符**，取反                     |
-|     ``DVector operator - (const DVector &other) const;``     |                     **运算符**，减法                     |
-|     ``DVector operator * (const double &other) const;``      |                 **运算符**，数乘（右侧）                 |
-| ``friend DVector operator * (const double &r, const DVector &v);`` |                 **运算符**，数乘（左侧）                 |
-|     ``double operator * (const DVector &other) const;``      |                     **运算符**，内积                     |
+|                         定义                         |                           说明                           |
+| :--------------------------------------------------: | :------------------------------------------------------: |
+|               ``double Elements[3];``                |                **成员变量**，维护向量内容                |
+|                 ``void SetZero();``                  | **成员函数**，将向量设为$\overrightarrow 0$ ，不改变维数 |
+|               ``double NormSquare();``               |         **成员函数**，返回 $|\mathbf \alpha|^2$          |
+|                  ``double Norm();``                  |          **成员函数**，返回 $|\mathbf \alpha|$           |
+|                   ``DVector e();``                   |             **成员函数**，返回该方向单位向量             |
+|   ``DVector& operator = (const DVector &Other);``    |                    **运算符**，深拷贝                    |
+| ``DVector operator + (const DVector &other) const;`` |                     **运算符**，加法                     |
+|           ``DVector operator -() const;``            |                     **运算符**，取反                     |
+| ``DVector operator - (const DVector &other) const;`` |                     **运算符**，减法                     |
+| ``DVector operator * (const double &other) const;``  |                 **运算符**，数乘（右侧）                 |
+| ``double operator * (const DVector &other) const;``  |                     **运算符**，内积                     |
 
 ##### ``singleParticle(GranularParticle.h)`` 单粒子
 

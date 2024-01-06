@@ -39,26 +39,19 @@ DVector DVector::operator* (const double &other) const{
     Ans.Elements[2] = Elements[2] * other;
     return Ans;
 }
-DVector operator * (const double &other, const DVector r) {
-    DVector Ans;
-    Ans.Elements[0] = r.Elements[0] * other;
-    Ans.Elements[1] = r.Elements[1] * other;
-    Ans.Elements[2] = r.Elements[2] * other;
-    return Ans;
-}
 double DVector::operator* (const DVector &other) const{
     return Elements[0] * other.Elements[0] +
             Elements[1] * other.Elements[1] +
             Elements[2] * other.Elements[2];
 }
-double DVector::NormSquare() {
+double DVector::NormSquare() const {
     return Elements[0] * Elements[0] +
             Elements[1] * Elements[1] +
             Elements[2] * Elements[2];
 }
-double DVector::Norm() { return std::sqrt(NormSquare()); }
+double DVector::Norm() const { return std::sqrt(NormSquare()); }
 
-DVector DVector::e() {
+DVector DVector::e() const {
     double Len = Norm();
 //    if (std::fabs(Len) < GlobalEPS) 
 //        printf("[Warning]: You may have called e() of a zero vector.\n");

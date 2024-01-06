@@ -56,11 +56,10 @@ class DVector {
         DVector operator -() const { return __Minus(); }
         DVector operator - (const DVector &other) const;
         DVector operator * (const double &other) const;
-        friend DVector operator * (const double &r, const DVector &v);
         double operator * (const DVector &other) const;
-        double NormSquare();
-        double Norm();
-        DVector e();
+        double NormSquare() const;
+        double Norm() const;
+        DVector e() const;
 };
 
 #endif
