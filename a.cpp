@@ -10,7 +10,7 @@ const double DeltaT = 0.001;
 const double StartKT = 10.0;
 const int ThreadNum = 12;
 const int Dimension = 2;
-const double gamma = 0.1;
+const double gamma = 0.05;
 const double epsilon = 1.0;
 const double sigma = 1.0;
 const double sigma12 = std::pow(sigma, 12.0);
@@ -45,7 +45,7 @@ DVector Force(const singleParticle &a, const singleParticle &b) {
     DVector DragForce = (a.Position - b.Position) * 
             ((-gamma) * ((b.Velocity - a.Velocity) * (b.Position - a.Position)) / 
             (b.Position - a.Position).NormSquare());
-    //printf("%.2lf\n", DragForce.Norm() / LennardJonesForce.Norm());
+    //printf("%.2lf\n", DragForce.Norm());
     Ans = LennardJonesForce + DragForce;
     //Ans = LennardJonesForce;
     return Ans;
