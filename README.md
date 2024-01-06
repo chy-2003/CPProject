@@ -71,31 +71,20 @@ $\pi$  。 ``double Pi = 3.14159265358979323846264f`` 。
 
 ##### ``DVector(BasicSupport.h)``  向量
 
-|                             定义                             |                             说明                             |
-| :----------------------------------------------------------: | :----------------------------------------------------------: |
-|              ``std::vector<double> Elements;``               |                  **成员变量**，维护向量内容                  |
-|                        ``bool Type;``                        | **成员变量**，表示向量类型。``False``为列向量，``True``为行向量 |
-|                       ``DVector()l;``                        |         缺省**构造函数**，默认向量大小为$0$，列向量          |
-|                  ``DVector(const int &);``                   |           **构造函数**，参数为向量维数，（列向量）           |
-|           ``DVector(const int &, const bool &);``            |            **构造函数**，参数为向量维数、向量类型            |
-|          ``DVector(const int &, const double &);``           |    **构造函数**，参数为向量维数、初始填充数值，（列向量）    |
-|   ``DVector(const int &, const bool &, const double &);``    |     **构造函数**，参数为向量维数、向量类型、初始填充数值     |
-|                       ``~DVector();``                        |                         **析构函数**                         |
-|                    ``int Size() const;``                     |                  **成员函数**，返回向量维数                  |
-|                   ``double Mod() const;``                    |                **成员函数**，返回向量中元素和                |
-|                    ``void Resize(int);``                     |                  **成员函数**，重设向量维数                  |
-|                     ``void SetZero();``                      |   **成员函数**，将向量设为$\overrightarrow 0$ ，不改变维数   |
-|                        ``void T();``                         |                 **成员函数**，将当前向量转置                 |
-|                    ``DVector T() const;``                    |       **成员函数**，返回当前向量的转置，不改变当前向量       |
-|          ``DVector& operator = (const DVector &);``          |                      **运算符**，深拷贝                      |
-| ``friend DVector operator + (const DVector &a, const DVector &b); `` |                     **友元运算符**，加法                     |
-|               ``DVector operator -() const;``                |                **运算符**，单元运算符，相反数                |
-| ``friend DVector operator - (const DVector &a, const DVector &b);`` |                     **友元运算符**，减法                     |
-| ``friend DVector operator * (const double &a, const DVector &b);`` |                    **友元运算符**，左数乘                    |
-| ``friend double operator * (const DVector &a, const DVector &b);`` |                     **友元运算符**，内积                     |
-|                   ``double NormSquare();``                   |           **成员函数**，返回 $|\mathbf \alpha|^2$            |
-|                      ``double Norm();``                      |            **成员函数**，返回 $|\mathbf \alpha|$             |
-|                       ``DVector e();``                       |               **成员函数**，返回该方向单位向量               |
+|                             定义                             |                           说明                           |
+| :----------------------------------------------------------: | :------------------------------------------------------: |
+|                   ``double Elements[3];``                    |                **成员变量**，维护向量内容                |
+|                     ``void SetZero();``                      | **成员函数**，将向量设为$\overrightarrow 0$ ，不改变维数 |
+|                   ``double NormSquare();``                   |         **成员函数**，返回 $|\mathbf \alpha|^2$          |
+|                      ``double Norm();``                      |          **成员函数**，返回 $|\mathbf \alpha|$           |
+|                       ``DVector e();``                       |             **成员函数**，返回该方向单位向量             |
+|       ``DVector& operator = (const DVector &Other);``        |                    **运算符**，深拷贝                    |
+|     ``DVector operator + (const DVector &other) const;``     |                     **运算符**，加法                     |
+|               ``DVector operator -() const;``                |                     **运算符**，取反                     |
+|     ``DVector operator - (const DVector &other) const;``     |                     **运算符**，减法                     |
+|     ``DVector operator * (const double &other) const;``      |                 **运算符**，数乘（右侧）                 |
+| ``friend DVector operator * (const double &r, const DVector &v);`` |                 **运算符**，数乘（左侧）                 |
+|     ``double operator * (const DVector &other) const;``      |                     **运算符**，内积                     |
 
 ##### ``singleParticle(GranularParticle.h)`` 单粒子
 
@@ -157,11 +146,17 @@ $$
 
 使用友元重载运算符（如 ``DVector`` 中的乘法）时，若类的定义在非 ``::`` 下的 namespace 中，在编译的最后一步 ld 时会报 undefined 错误。而这个错误并不会被clang检查到并且能够通过最后一步 ld 之前所有的编译步骤。
 
-（p.s. by PaimonZAYCHIK）我并不肯定根本原因是不是这个，但至少，表象是这样的。也有可能是我编译的姿势有问题。遇到这个问题时完全不懂，花了接近四个小时才猜到这个原因。语法检查器没有提示，编译没有 warning，没有 error，函数就在头上还是 undefined。哎。
+放弃使用namespace来区分变量作用域。
+
+（**p.s. by PaimonZAYCHIK**）我并不肯定根本原因是不是这个，但至少，表象是这样的。也有可能是我编译的姿势有问题。遇到这个问题时完全不懂，花了接近四个小时才猜到这个原因。语法检查器没有提示，编译没有 warning，没有 error，函数就在头上还是 undefined。哎。
 
 #### 1
 
-多线程并行运行时，会产生未知运行错误。并不清楚产生的原因，猜测是同时访问 ``std::vector<>::iterator`` 的地址导致。暂时砍掉多线程模块。
+多线程并行运行时，会产生未知运行错误。并不清楚产生的原因，猜测是同时访问 ``std::vector<>::iterator`` 的地址导致。
+
+改用定长数组。
+
+（**p.s. by PaimonZAYCHIK**）stl库的东西在不好用的时候还是很好用的。一旦不好用了你都不知道哪里，什么时候，为什么不好用的。
 
 #### 2
 

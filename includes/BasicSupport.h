@@ -34,8 +34,8 @@
  */
 
 #include <cmath>
-#include <vector>
 #include <cstdio>
+#include <cstring>
 
 const double GlobalEPS = 1e-8;
 
@@ -45,32 +45,19 @@ double sqr(double x);
 
 class DVector {
     public :
-        std::vector<double> Elements;
-        bool Type;   //False for n*1, True for 1*n
-        DVector();
-        ~DVector();
-        DVector(const int &);
-        DVector(const int &, const bool &);
-        DVector(const int &, const double &);
-        DVector(const int &, const bool &, const double &);
-        int Size() const;
-        double Mod() const;
-        void Resize(int _size);
+        double Elements[3];
         void SetZero();
-        DVector __Copy() const;
         DVector __Minus() const;
-        void T();
-        DVector T() const;
         DVector& operator = (const DVector &Other) {
-            this->Type = Other.Type;
-            this->Elements = Other.Elements;
+            memcpy(this->Elements, Other.Elements, sizeof(this->Elements));
             return *this;
         }
-        friend DVector operator + (const DVector &a, const DVector &b); 
+        DVector operator + (const DVector &other) const; 
         DVector operator -() const { return __Minus(); }
-        friend DVector operator - (const DVector &a, const DVector &b);
-        friend DVector operator * (const double &a, const DVector &b);
-        friend double operator * (const DVector &a, const DVector &b);
+        DVector operator - (const DVector &other) const;
+        DVector operator * (const double &other) const;
+        friend DVector operator * (const double &r, const DVector &v);
+        double operator * (const DVector &other) const;
         double NormSquare();
         double Norm();
         DVector e();

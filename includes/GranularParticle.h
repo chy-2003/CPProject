@@ -36,7 +36,6 @@ public :
     DVector Position, Velocity;
     singleParticle(int);
     singleParticle();
-    void SetDimention(int);
     void OutputState();
 };
 
@@ -57,7 +56,8 @@ public :
 
     void RK4_2(double DeltaT, 
             DVector (*Force)(const singleParticle &a, const singleParticle &b), 
-            singleParticle (*BoundaryModifier)(const singleParticle &a));
+            singleParticle (*BoundaryModifier)(const singleParticle &a),
+            int ThreadNum);
 };
 
 #endif
