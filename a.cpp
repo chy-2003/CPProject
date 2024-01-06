@@ -8,7 +8,7 @@ const int N = 64;
 const double L = 20.0;
 const double DeltaT = 0.001;
 const double StartKT = 10.0;
-const int ThreadNum = 4;
+const int ThreadNum = 16;
 const int Dimension = 2;
 const double gamma = 100.0;
 const double epsilon = 1.0;
@@ -98,7 +98,7 @@ char GraphicName[100];
 int main() {
     Init();
     FILE *OutputTarget = fopen("CaseZero.csv", "w");
-    int TotalStep = 50; int OutputNum = (TotalStep / 50);
+    int TotalStep = 5000; int OutputNum = (TotalStep / 50);
     for (int i = 0; i < TotalStep; ++i) {
         //WarnRE();
         if (i % OutputNum == 0) {
