@@ -12,6 +12,10 @@
  *
  * Programed by PaimonZAYCHIK(chy)
  * 
+ * version 2 (2024.01.12)
+ *  - particleGroup
+ *    - DRK4_2
+ * 
  * version 1 (2024.01.03)
  *  - particleGroup
  *    - RK4_2
@@ -55,6 +59,11 @@ public :
     void VelocityRand3D(double);              //for 3D system, uniform distribution(ball)
 
     void RK4_2(double DeltaT, 
+            DVector (*Force)(const singleParticle &a, const singleParticle &b), 
+            singleParticle (*BoundaryModifier)(const singleParticle &a),
+            int ThreadNum);
+
+    void DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, double MinDeltaT,
             DVector (*Force)(const singleParticle &a, const singleParticle &b), 
             singleParticle (*BoundaryModifier)(const singleParticle &a),
             int ThreadNum);

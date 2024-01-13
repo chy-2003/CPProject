@@ -6,7 +6,6 @@
 
 const int N = 64;
 const double L = 20.0;
-const double DeltaT = 0.001;
 const double StartKT = 10.0;
 const int ThreadNum = 12;
 const int Dimension = 2;
@@ -42,12 +41,12 @@ DVector Force(const singleParticle &a, const singleParticle &b) {
     DVector LennardJonesForce = 
             r.e() * (24.0 * epsilon * (2.0 * sigma12 / std::pow(R, 13.0) - sigma6 / std::pow(R, 7.0)));
 
-    DVector DragForce = (a.Position - b.Position) * 
-            ((-gamma) * ((b.Velocity - a.Velocity) * (b.Position - a.Position)) / 
-            (b.Position - a.Position).NormSquare());
+    //DVector DragForce = (a.Position - b.Position) * 
+    //        ((-gamma) * ((b.Velocity - a.Velocity) * (b.Position - a.Position)) / 
+    //        (b.Position - a.Position).NormSquare());
     //printf("%.2lf\n", DragForce.Norm());
-    Ans = LennardJonesForce + DragForce;
-    //Ans = LennardJonesForce;
+    //Ans = LennardJonesForce + DragForce;
+    Ans = LennardJonesForce;
     return Ans;
 }
 
@@ -94,10 +93,10 @@ void WarnRE() {
 
 char GraphicName[100];
 
-int main() {
+inline void Method_RK4_2(double DeltaT, int TotalStep) {
     Init();
     FILE *OutputTarget = fopen("CaseOne.csv", "w");
-    int TotalStep = 5000; int OutputNum = std::max(1, TotalStep / 50);
+    int OutputNum = std::max(1, TotalStep / 50);
     for (int i = 0; i < TotalStep; ++i) {
         //WarnRE();
         if (i % OutputNum == 0) {
@@ -127,5 +126,25 @@ int main() {
     }
     printf("Done.\n");
     fclose(OutputTarget);
+    return;
+}
+
+inline void Method_DRK4_2(double DeltaT, double Time, double Cutoff, double MaxCutoff, double MinCutoff) {
+    Init();
+    FILE *OutputTarget = fopen("CaseOne.csv", "w");
+    for (double T = DeltaT; T < Time + DeltaT; T += DeltaT) {
+        fprintf(OutputTarget, "%.10lf, %.10lf, %.10lf\n", 
+                T - DeltaT, AllFree.KTemperature(), AllFree.Energy(Potential));
+        //printf("%.10lf, %.10lf\n", (T - DeltaT) / Time, DeltaT);
+        AllFree.DRK4_2(DeltaT, Cutoff, MaxCutoff, MinCutoff, Force, BoundaryModifier, ThreadNum);
+    }
+    printf("Done.\n");
+    fclose(OutputTarget);
+    return;
+}
+
+int main() {
+    //Method_RK4_2(0.001, 5000);
+    Method_DRK4_2(0.001, 5.0, 0.001, 0.01, 0.0002);
     return 0;
 }

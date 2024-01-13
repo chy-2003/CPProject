@@ -223,3 +223,84 @@ void particleGroup::RK4_2(double DeltaT,
     }
     return;
 }
+
+
+void particleGroup::DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, double MinDeltaT,
+        DVector (*Force)(const singleParticle &a, const singleParticle &b),
+        singleParticle (*BoundaryModifier)(const singleParticle &a),
+        int ThreadNum) {
+    
+    std::vector<singleParticle> T1, T2, T3, T4, Temp; //Position -> U, Velocity -> V
+    T1.resize(Number); T2.resize(Number); T3.resize(Number); T4.resize(Number);
+    Temp.resize(Number);
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    for (int i = 0; i < Number; ++i) {
+        T1[i].Position = Particles[i].Velocity * DeltaT;
+        DVector ForceSum;
+        ForceSum.SetZero();
+        for (int j = 0; j < Number; ++j)
+            ForceSum = ForceSum + Force(Particles[i], Particles[j]);
+        T1[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
+    }
+    
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    for (int i = 0; i < Number; ++i) {
+        Temp[i].Position = Particles[i].Position + T1[i].Position * 0.5;
+        Temp[i].Velocity = Particles[i].Velocity + T1[i].Velocity * 0.5;
+    }
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    for (int i = 0; i < Number; ++i) {
+        T2[i].Position = (Particles[i].Velocity + T1[i].Velocity * 0.5) * DeltaT;
+        DVector ForceSum;
+        ForceSum.SetZero();
+        for (int j = 0; j < Number; ++j)
+            ForceSum = ForceSum + Force(Temp[i], Temp[j]);
+        T2[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
+    }
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    for (int i = 0; i < Number; ++i) {
+        Temp[i].Position = Particles[i].Position + T2[i].Position * 0.5;
+        Temp[i].Velocity = Particles[i].Velocity + T2[i].Velocity * 0.5;
+    }
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    for (int i = 0; i < Number; ++i) {
+        T3[i].Position = (Particles[i].Velocity + T2[i].Velocity * 0.5) * DeltaT;
+        DVector ForceSum;
+        ForceSum.SetZero();
+        for (int j = 0; j < Number; ++j) 
+            ForceSum = ForceSum + Force(Temp[i], Temp[j]);
+        T3[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
+    }
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    for (int i = 0; i < Number; ++i) {
+        Temp[i].Position = Particles[i].Position + T3[i].Position * 0.5;
+        Temp[i].Velocity = Particles[i].Velocity + T3[i].Velocity * 0.5;
+    }
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    for (int i = 0; i < Number; ++i) {
+        T4[i].Position = (Particles[i].Velocity + T3[i].Velocity) * DeltaT;
+        DVector ForceSum;
+        ForceSum.SetZero();
+        for (int j = 0; j < Number; ++j) 
+            ForceSum = ForceSum + Force(Temp[i], Temp[j]);
+        T4[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
+    }
+
+    //#pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    DVector DeltaV; double MaxDeltaV = 0;
+    for (int i = 0; i < Number; ++i) {
+        Particles[i].Position = Particles[i].Position + 
+                (T1[i].Position + T2[i].Position * 2.0 + T3[i].Position * 2.0 + T4[i].Position) * (1.0 / 6.0);
+        DeltaV = (T1[i].Velocity + T2[i].Velocity * 2.0 + T3[i].Velocity * 2.0 + T4[i].Velocity) * 
+                (1.0 / 6.0);
+        Particles[i].Velocity = Particles[i].Velocity + DeltaV;
+        if (DeltaV.Norm() > MaxDeltaV) MaxDeltaV = DeltaV.Norm();
+        Particles[i] = BoundaryModifier(Particles[i]);
+    }
+    if (MaxDeltaV > Cutoff) DeltaT = std::max(DeltaT / 2, MinDeltaT); 
+        else DeltaT = std::min(DeltaT * 2, MaxDeltaT);
+    return;
+}
