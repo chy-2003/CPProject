@@ -115,6 +115,7 @@ $\pi$  。 ``double Pi = 3.14159265358979323846264f`` 。
 |             ``void VelocityRand2D(double KT); ``             | **成员函数**，将所有粒子的速度随机分布。满足：速度方向在单位圆上均匀分布，径向速度均匀分布，温度等于``KT``。仅二维体系可用。 |
 |             ``void VelocityRand3D(double KT);``              | **成员函数**，将所有粒子的速度随机分布。满足：速度方向在单位球上均匀分布，径向速度均匀分布，温度等于``KT``。仅三维体系可用。 |
 | ``void RK4_2(double DeltaT, DVector (*Force)(const singleParticle &a, const singleParticle &b), singleParticle (*BoundaryModifier)(const singleParticle &a));`` | **成员函数**，单步运动模拟，步长为 ``DeltaT`` 。使用适用二阶微分方程的四阶 Ronge-Kutta 方法。需传入函数指针 ``Force`` 定义两个粒子间的力。需传入函数指针 ``BoundaryModifier`` ，定义体系边界和修正方法。 |
+| ``void particleGroup::DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, double MinDeltaT, DVector (*Force)(const singleParticle &a, const singleParticle &b),singleParticle (*BoundaryModifier)(const singleParticle &a),int ThreadNum);`` | **成员函数**，相较于``RK4_2``，这个函数加入了自适应步长，``Cutoff``表示理想速度插值，``MaxDeltaT``表示最大允许时间步长，``MinDeltaT`` 亦然。调小 ``Cutoff`` 能够提高整体精度，调小 ``MinDeltaT`` 能够提高碰撞部分的精度，调大 ``MaxDeltaT`` 能够一定程度上加速运行时间，但有降低精度的风险。按照问题要求，选择这三个参数为 ``0.001, 0.01, 0.0002`` 是可接受的。 |
 
 ##### ``BMP.h`` 暂略
 
