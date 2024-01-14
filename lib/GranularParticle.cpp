@@ -24,9 +24,9 @@ void singleParticle::OutputState() {
     return;
 }
 
-particleGroup::particleGroup(int _Dimention, int _Number) {
+particleGroup::particleGroup(int _Dimension, int _Number) {
     Number = _Number;
-    Dimention = _Dimention;
+    Dimension = _Dimension;
     Particles.resize(Number);
     Particles.shrink_to_fit();
 //    for (std::vector<singleParticle>::iterator it = Particles.begin(); it != Particles.end(); ++it)
@@ -36,7 +36,7 @@ particleGroup::particleGroup(int _Dimention, int _Number) {
 
 particleGroup::particleGroup() {
     Number = 100;
-    Dimention = 2;
+    Dimension = 2;
     Particles.resize(Number);
     Particles.shrink_to_fit();
 //    for (std::vector<singleParticle>::iterator it = Particles.begin(); it != Particles.end(); ++it)
@@ -76,7 +76,7 @@ void particleGroup::PositionRand(double Lowerbound, double Upperbound) {
     std::mt19937 Gen(Rd());
     std::uniform_real_distribution<> URD(Lowerbound, Upperbound);
     for (int i = 0; i < Number; ++i) {
-        for (int j = 0; j < Dimention; ++j)
+        for (int j = 0; j < Dimension; ++j)
             Particles[i].Position.Elements[j] = URD(Gen);
     }
     return;
@@ -85,11 +85,11 @@ void particleGroup::PositionRand(double Lowerbound, double Upperbound) {
 void particleGroup::PositionRand(double Lowerbound, double Upperbound, double startAvoid) {
     std::random_device Rd;
     std::mt19937 Gen(Rd());
-    std::uniform_real_distribution<> URD(Lowerbound, Upperbound);
+    std::uniform_real_distribution<> URD(Lowerbound, Upperbound - startAvoid);
     for (int i = 0; i < Number; ++i) {
         int Flg = 0;
         while (!Flg) {
-            for (int j = 0; j < Dimention; ++j)
+            for (int j = 0; j < Dimension; ++j)
                 Particles[i].Position.Elements[j] = URD(Gen);
             Flg = 1;
             for (int j = 0; j < i; ++j)
@@ -151,14 +151,16 @@ void particleGroup::VelocityRand3D(double KT) {
 
 void particleGroup::RK4_2(double DeltaT,
         DVector (*Force)(const singleParticle &a, const singleParticle &b),
-        singleParticle (*BoundaryModifier)(const singleParticle &a),
+        singleParticle (*BoundaryModifier)(const singleParticle &a, int Index),
         int ThreadNum) {
     
     std::vector<singleParticle> T1, T2, T3, T4, Temp; //Position -> U, Velocity -> V
     T1.resize(Number); T2.resize(Number); T3.resize(Number); T4.resize(Number);
     Temp.resize(Number);
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    int ChunckSize = std::max(1, Number / ThreadNum / 2);
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         T1[i].Position = Particles[i].Velocity * DeltaT;
         DVector ForceSum;
@@ -168,12 +170,12 @@ void particleGroup::RK4_2(double DeltaT,
         T1[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
     }
     
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + T1[i].Position * 0.5;
         Temp[i].Velocity = Particles[i].Velocity + T1[i].Velocity * 0.5;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         T2[i].Position = (Particles[i].Velocity + T1[i].Velocity * 0.5) * DeltaT;
         DVector ForceSum;
@@ -183,12 +185,12 @@ void particleGroup::RK4_2(double DeltaT,
         T2[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
     }
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + T2[i].Position * 0.5;
         Temp[i].Velocity = Particles[i].Velocity + T2[i].Velocity * 0.5;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         T3[i].Position = (Particles[i].Velocity + T2[i].Velocity * 0.5) * DeltaT;
         DVector ForceSum;
@@ -198,12 +200,12 @@ void particleGroup::RK4_2(double DeltaT,
         T3[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
     }
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + T3[i].Position * 0.5;
         Temp[i].Velocity = Particles[i].Velocity + T3[i].Velocity * 0.5;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         T4[i].Position = (Particles[i].Velocity + T3[i].Velocity) * DeltaT;
         DVector ForceSum;
@@ -213,13 +215,13 @@ void particleGroup::RK4_2(double DeltaT,
         T4[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
     }
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         Particles[i].Position = Particles[i].Position + 
                 (T1[i].Position + T2[i].Position * 2.0 + T3[i].Position * 2.0 + T4[i].Position) * (1.0 / 6.0);
         Particles[i].Velocity = Particles[i].Velocity + 
                 (T1[i].Velocity + T2[i].Velocity * 2.0 + T3[i].Velocity * 2.0 + T4[i].Velocity) * (1.0 / 6.0);
-        Particles[i] = BoundaryModifier(Particles[i]);
+        Particles[i] = BoundaryModifier(Particles[i], i);
     }
     return;
 }
@@ -227,14 +229,16 @@ void particleGroup::RK4_2(double DeltaT,
 
 void particleGroup::DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, double MinDeltaT,
         DVector (*Force)(const singleParticle &a, const singleParticle &b),
-        singleParticle (*BoundaryModifier)(const singleParticle &a),
+        singleParticle (*BoundaryModifier)(const singleParticle &a, int Index),
         int ThreadNum) {
     
     std::vector<singleParticle> T1, T2, T3, T4, Temp; //Position -> U, Velocity -> V
     T1.resize(Number); T2.resize(Number); T3.resize(Number); T4.resize(Number);
     Temp.resize(Number);
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    int ChunckSize = std::max(1, Number / ThreadNum / 2);
+
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         T1[i].Position = Particles[i].Velocity * DeltaT;
         DVector ForceSum;
@@ -244,12 +248,12 @@ void particleGroup::DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, doub
         T1[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
     }
     
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + T1[i].Position * 0.5;
         Temp[i].Velocity = Particles[i].Velocity + T1[i].Velocity * 0.5;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         T2[i].Position = (Particles[i].Velocity + T1[i].Velocity * 0.5) * DeltaT;
         DVector ForceSum;
@@ -259,12 +263,12 @@ void particleGroup::DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, doub
         T2[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
     }
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + T2[i].Position * 0.5;
         Temp[i].Velocity = Particles[i].Velocity + T2[i].Velocity * 0.5;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         T3[i].Position = (Particles[i].Velocity + T2[i].Velocity * 0.5) * DeltaT;
         DVector ForceSum;
@@ -274,12 +278,12 @@ void particleGroup::DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, doub
         T3[i].Velocity = ForceSum * (DeltaT * (1.0 / Particles[i].Mass));
     }
 
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         Temp[i].Position = Particles[i].Position + T3[i].Position * 0.5;
         Temp[i].Velocity = Particles[i].Velocity + T3[i].Velocity * 0.5;
     }
-    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ThreadNum)
+    #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize)
     for (int i = 0; i < Number; ++i) {
         T4[i].Position = (Particles[i].Velocity + T3[i].Velocity) * DeltaT;
         DVector ForceSum;
@@ -298,7 +302,7 @@ void particleGroup::DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, doub
                 (1.0 / 6.0);
         Particles[i].Velocity = Particles[i].Velocity + DeltaV;
         if (DeltaV.Norm() > MaxDeltaV) MaxDeltaV = DeltaV.Norm();
-        Particles[i] = BoundaryModifier(Particles[i]);
+        Particles[i] = BoundaryModifier(Particles[i], i);
     }
     if (MaxDeltaV > Cutoff) DeltaT = std::max(DeltaT / 2, MinDeltaT); 
         else DeltaT = std::min(DeltaT * 2, MaxDeltaT);

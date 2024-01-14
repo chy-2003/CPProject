@@ -106,7 +106,7 @@ singleParticle BoundaryModifier(const singleParticle &a) {
     return Ans;
 }
 #else 
-singleParticle BoundaryModifier(const singleParticle &a) {
+singleParticle BoundaryModifier(const singleParticle &a, int Index) {
     singleParticle Ans = a;
     if (Ans.Position.Elements[0] < 0) {
         Ans.Position.Elements[0] = -Ans.Position.Elements[0];

@@ -46,9 +46,15 @@ public :
 class particleGroup {
 public :
     std::vector<singleParticle> Particles;
-    int Number, Dimention;
+    int Number, Dimension;
     particleGroup(int, int);
     particleGroup();
+    particleGroup& operator= (const particleGroup &Other) {
+        Number = Other.Number;
+        Dimension = Other.Dimension;
+        Particles = Other.Particles;
+        return (*this);
+    }
     void Init();
     double KEnergy();
     double KTemperature();
@@ -60,12 +66,12 @@ public :
 
     void RK4_2(double DeltaT, 
             DVector (*Force)(const singleParticle &a, const singleParticle &b), 
-            singleParticle (*BoundaryModifier)(const singleParticle &a),
+            singleParticle (*BoundaryModifier)(const singleParticle &a, int Index),
             int ThreadNum);
 
     void DRK4_2(double &DeltaT, double Cutoff, double MaxDeltaT, double MinDeltaT,
             DVector (*Force)(const singleParticle &a, const singleParticle &b), 
-            singleParticle (*BoundaryModifier)(const singleParticle &a),
+            singleParticle (*BoundaryModifier)(const singleParticle &a, int Index),
             int ThreadNum);
 };
 
