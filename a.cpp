@@ -242,8 +242,8 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
         //printf("%.10lf, %.10lf\n", (T - DeltaT) / Time, DeltaT);
 
         AllFree.DRK4_2(DeltaT, Cutoff, MaxCutoff, MinCutoff, 
-                PeriodForce, PeriodBoundaryModifier, ThreadNum);
-
+                Force, BoundaryModifier, ThreadNum);
+/*
         if (T > 2.0) {
             for (int i = 0; i < N; ++i) {
                 //Temp = AllFree.Particles[i].Velocity - MeanVelocity;
@@ -253,13 +253,10 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
                 //Add(Temp.Elements[1]);
             }
         }
-        if (T * 10 > IT) {
+*/
+        if (T * 25 > IT) {
             IT++;
             printf("%.2lf\n", T);
-        }
-/*
-        if (T * 10 > IT) {
-            IT++;
             memset(GraphicName, 0, sizeof(GraphicName));
             sprintf(GraphicName, "GO/%04d.bmp", IT);
             BMPGraphics GraphicOutput(512, 512, GraphicName);
@@ -272,8 +269,7 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
             }
             GraphicOutput.DoOutput();
         }
-*/
-
+/*
         Angle = URDA(Gen);
         Velocity = URDR(Gen);
         i = UID(Gen);
@@ -281,7 +277,7 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
                 std::cos(Angle) * Velocity + AllFree.Particles[i].Velocity.Elements[0];
         AllFree.Particles[i].Velocity.Elements[1] = 
                 std::sin(Angle) * Velocity + AllFree.Particles[i].Velocity.Elements[1];
-
+*/
     }
     printf("Done.\n");
     fclose(OutputTarget);
