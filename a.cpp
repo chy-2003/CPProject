@@ -7,7 +7,7 @@
 const int N = 64;
 const double L = 20.0;
 const double StartKT = 10.0;
-const int ThreadNum = 12;
+const int ThreadNum = 16;
 const int Dimension = 2;
 const double gamma = 0.05;
 const double epsilon = 1.0;
@@ -17,6 +17,7 @@ const double sigma6 = std::pow(sigma, 6.0);
 const double startAvoid = std::pow(2.0, 1.0 / 6.0) * sigma;
 particleGroup AllFree(Dimension, N), Rec(Dimension, N);
 DVector Wrap[100];
+char GraphicName[100];
 
 //#define __DO_PIC_OUTPUT__
 
@@ -43,12 +44,12 @@ DVector Force(const singleParticle &a, const singleParticle &b) {
     DVector LennardJonesForce = 
             r.e() * (24.0 * epsilon * (2.0 * sigma12 / std::pow(R, 13.0) - sigma6 / std::pow(R, 7.0)));
 
-    //DVector DragForce = (a.Position - b.Position) * 
-    //        ((-gamma) * ((b.Velocity - a.Velocity) * (b.Position - a.Position)) / 
-    //        (b.Position - a.Position).NormSquare());
+    DVector DragForce = (a.Position - b.Position) * 
+            ((-gamma) * ((b.Velocity - a.Velocity) * (b.Position - a.Position)) / 
+            (b.Position - a.Position).NormSquare());
     //printf("%.2lf\n", DragForce.Norm());
-    //Ans = LennardJonesForce + DragForce;
-    Ans = LennardJonesForce;
+    Ans = LennardJonesForce + DragForce;
+    //Ans = LennardJonesForce;
     return Ans;
 }
 
@@ -68,8 +69,7 @@ DVector PeriodForce(const singleParticle &a, const singleParticle &b) {
     DVector LennardJonesForce = 
             r.e() * (24.0 * epsilon * (2.0 * sigma12 / std::pow(R, 13.0) - sigma6 / std::pow(R, 7.0)));
 
-    DVector DragForce = r * 
-            (gamma * ((b.Velocity - a.Velocity) * r) / r.NormSquare());
+    DVector DragForce = r * (gamma * ((b.Velocity - a.Velocity) * r) / r.NormSquare());
     //printf("%.2lf\n", DragForce.Norm());
     Ans = LennardJonesForce + DragForce;
     //Ans = LennardJonesForce;
@@ -138,8 +138,6 @@ void WarnRE() {
     return;
 }
 
-char GraphicName[100];
-
 inline void Method_RK4_2(double DeltaT, int TotalStep) {
     Init();
     FILE *OutputTarget = fopen("CaseOne.csv", "w");
@@ -195,8 +193,8 @@ double InitialARS(int ThreadNum) {
     int ChunckSize = std::max(1, N / ThreadNum / 2);
     #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize) reduction(+: Ans)
     for (int i = 0; i < N; ++i)
-        Ans += ((AllFree.Particles[i].Position + Wrap[i]) - Rec.Particles[i].Position).Norm();
-    return Ans / N;
+        Ans += ((AllFree.Particles[i].Position + Wrap[i]) - Rec.Particles[i].Position).NormSquare();
+    return std::sqrt(Ans / N);
 }
 
 double SelfARS(int ThreadNum) {
@@ -205,8 +203,8 @@ double SelfARS(int ThreadNum) {
     #pragma omp parallel for num_threads(ThreadNum) schedule(dynamic, ChunckSize) reduction(+: Ans)
     for (int i = 0; i < N * N; ++i)
         Ans += ((AllFree.Particles[i / N].Position + Wrap[i / N]) - 
-                (AllFree.Particles[i % N].Position + Wrap[i % N])).Norm();
-    return Ans / (N * N);
+                (AllFree.Particles[i % N].Position + Wrap[i % N])).NormSquare();
+    return std::sqrt(Ans / (N * N));
 }
 
 inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double MaxCutoff, double MinCutoff,
@@ -222,6 +220,7 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
     double Angle, Velocity, i;
 
     FILE *OutputTarget = fopen("CaseOne.csv", "w");
+    int IT = 0;
     for (double T = DeltaT; T < Time + DeltaT; T += DeltaT) {
         fprintf(OutputTarget, "%.10lf, %.10lf, %.10lf, %.10lf, %.10lf\n", 
                 T - DeltaT, AllFree.KTemperature(), AllFree.Energy(Potential), 
@@ -230,6 +229,22 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
 
         AllFree.DRK4_2(DeltaT, Cutoff, MaxCutoff, MinCutoff, 
                 PeriodForce, PeriodBoundaryModifier, ThreadNum);
+/*
+        if (T * 10 > IT) {
+            IT++;
+            memset(GraphicName, 0, sizeof(GraphicName));
+            sprintf(GraphicName, "GO/%04d.bmp", IT);
+            BMPGraphics GraphicOutput(512, 512, GraphicName);
+            GraphicOutput.SetBackground(White);
+            for (int j = 0; j < N; ++j) {
+                DrawParticleR(GraphicOutput, 
+                        (int)(AllFree.Particles[j].Position.Elements[0] / 20.0 * 512),
+                        (int)(AllFree.Particles[j].Position.Elements[1] / 20.0 * 512),
+                        5, Red);
+            }
+            GraphicOutput.DoOutput();
+        }
+*/
 
         Angle = URDA(Gen);
         Velocity = URDR(Gen);
@@ -242,6 +257,7 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
     }
     printf("Done.\n");
     fclose(OutputTarget);
+
     return;
 }
 
