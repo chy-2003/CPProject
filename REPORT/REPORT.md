@@ -29,3 +29,5 @@ DRK4_2，周期边界条件，LJ势无截断，有粘滞力，有random kick 0.1
 <img src="006/CaseOne.jpg" style="zoom:25%;" />
 
 <img src="006/CaseTwo.jpg" style="zoom:25%;" />
+
+<img src="007/CaseOne.jpg" style="zoom:25%;" />

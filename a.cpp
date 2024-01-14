@@ -17,7 +17,11 @@ const double sigma6 = std::pow(sigma, 6.0);
 const double startAvoid = std::pow(2.0, 1.0 / 6.0) * sigma;
 particleGroup AllFree(Dimension, N), Rec(Dimension, N);
 DVector Wrap[100];
+DVector MeanVelocity;
 char GraphicName[100];
+const int CellNum = 1000;
+int VRec[CellNum];
+double Edge = StartKT, CellSize = 2.0 * Edge / CellNum;
 
 //#define __DO_PIC_OUTPUT__
 
@@ -31,6 +35,10 @@ void Init() {
     AllFree.PositionRand(0, L, startAvoid);
     AllFree.VelocityRand2D(StartKT);
     memset(Wrap, 0, sizeof(Wrap));
+    MeanVelocity.SetZero();
+    for (int i = 0; i < N; ++i)
+        MeanVelocity = MeanVelocity + AllFree.Particles[i].Velocity;
+    MeanVelocity = MeanVelocity * (1.0 / N);
     return;
 }
 
@@ -70,7 +78,6 @@ DVector PeriodForce(const singleParticle &a, const singleParticle &b) {
             r.e() * (24.0 * epsilon * (2.0 * sigma12 / std::pow(R, 13.0) - sigma6 / std::pow(R, 7.0)));
 
     DVector DragForce = r * (gamma * ((b.Velocity - a.Velocity) * r) / r.NormSquare());
-    //printf("%.2lf\n", DragForce.Norm());
     Ans = LennardJonesForce + DragForce;
     //Ans = LennardJonesForce;
     return Ans;
@@ -207,6 +214,12 @@ double SelfARS(int ThreadNum) {
     return std::sqrt(Ans / (N * N));
 }
 
+inline void Add(double v) {
+    if (v < -Edge || v > Edge) return;
+    ++VRec[int((v + Edge) / CellSize)];
+    return;
+}
+
 inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double MaxCutoff, double MinCutoff,
         double KT) {
     Init();
@@ -221,6 +234,7 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
 
     FILE *OutputTarget = fopen("CaseOne.csv", "w");
     int IT = 0;
+    DVector Temp;
     for (double T = DeltaT; T < Time + DeltaT; T += DeltaT) {
         fprintf(OutputTarget, "%.10lf, %.10lf, %.10lf, %.10lf, %.10lf\n", 
                 T - DeltaT, AllFree.KTemperature(), AllFree.Energy(Potential), 
@@ -229,6 +243,20 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
 
         AllFree.DRK4_2(DeltaT, Cutoff, MaxCutoff, MinCutoff, 
                 PeriodForce, PeriodBoundaryModifier, ThreadNum);
+
+        if (T > 2.0) {
+            for (int i = 0; i < N; ++i) {
+                //Temp = AllFree.Particles[i].Velocity - MeanVelocity;
+                Temp = AllFree.Particles[i].Velocity;
+                //printf("%.2lf\n", Temp.Norm());
+                Add(Temp.Elements[0]);
+                //Add(Temp.Elements[1]);
+            }
+        }
+        if (T * 10 > IT) {
+            IT++;
+            printf("%.2lf\n", T);
+        }
 /*
         if (T * 10 > IT) {
             IT++;
@@ -258,12 +286,18 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
     printf("Done.\n");
     fclose(OutputTarget);
 
+    OutputTarget = fopen("Distribution.csv", "w");
+    for (int i = 0; i < CellNum; ++i) {
+        fprintf(OutputTarget, "%d, %.5lf, %d\n", i, -Edge + CellSize * i, VRec[i]);
+    }
+    fclose(OutputTarget);
+
     return;
 }
 
 int main() {
     //Method_RK4_2(0.001, 5000);
     //Method_DRK4_2(0.001, 1.0, 0.001, 0.01, 0.0002);
-    Method_DRK4_2_Kick(0.001, 5.0, 0.001, 0.01, 0.0002, 0.1);
+    Method_DRK4_2_Kick(0.001, 15.0, 0.001, 0.01, 0.0002, 0.48);
     return 0;
 }
