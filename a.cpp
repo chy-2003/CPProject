@@ -4,9 +4,9 @@
 
 //g++ lib/*.cpp a.cpp -o a.exe -O2 -fopenmp -std=c++11
 
-const int N = 64;
-const double L = 20.0;
-const double StartKT = 10.0;
+const int N = 100;
+const double L = 400.0;
+const double StartKT = 5000.0;
 const int ThreadNum = 16;
 const int Dimension = 2;
 const double gamma = 0.05;
@@ -32,7 +32,7 @@ Color Black((unsigned char)0, (unsigned char)0, (unsigned char)0);
 
 void Init() {
     AllFree.Init();
-    AllFree.PositionRand(0, L, startAvoid);
+    AllFree.PositionRand(0, L / 5, startAvoid);
     AllFree.VelocityRand2D(StartKT);
     memset(Wrap, 0, sizeof(Wrap));
     MeanVelocity.SetZero();
@@ -223,6 +223,7 @@ inline void Add(double v) {
 inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double MaxCutoff, double MinCutoff,
         double KT) {
     Init();
+    printf("Start.\n");
     Rec = AllFree;
 
     std::random_device Rd;
@@ -254,7 +255,7 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
             }
         }
 */
-        if (T * 25 > IT) {
+        if (T * 12 > IT) {
             IT++;
             printf("%.2lf\n", T);
             memset(GraphicName, 0, sizeof(GraphicName));
@@ -263,9 +264,9 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
             GraphicOutput.SetBackground(White);
             for (int j = 0; j < N; ++j) {
                 DrawParticleR(GraphicOutput, 
-                        (int)(AllFree.Particles[j].Position.Elements[0] / 20.0 * 512),
-                        (int)(AllFree.Particles[j].Position.Elements[1] / 20.0 * 512),
-                        5, Red);
+                        (int)(AllFree.Particles[j].Position.Elements[0] / L * 512),
+                        (int)(AllFree.Particles[j].Position.Elements[1] / L * 512),
+                        1, Red);
             }
             GraphicOutput.DoOutput();
         }
@@ -294,6 +295,6 @@ inline void Method_DRK4_2_Kick(double DeltaT, double Time, double Cutoff, double
 int main() {
     //Method_RK4_2(0.001, 5000);
     //Method_DRK4_2(0.001, 1.0, 0.001, 0.01, 0.0002);
-    Method_DRK4_2_Kick(0.001, 15.0, 0.001, 0.01, 0.0002, 0.48);
+    Method_DRK4_2_Kick(0.002, 30.0, 0.01, 0.02, 0.0004, 0.48);
     return 0;
 }
